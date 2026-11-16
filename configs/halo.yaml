@@ -1,0 +1,22 @@
+# halo-CRISPeD: disks with the swollen-rim residual stress (render.HALO_AMP). Recipe of the paper.
+# dataset_root / runs_root default to paths.py
+train_sources: [halo/train]
+val_sources: [halo/val]
+R_ref: 0.006              # m; f = R_ref * f_over_R for the synthetic disks
+seed: 0
+max_items: null           # subsample train (val gets max_items/4) for quick runs
+
+force_target: log         # log: standardised log(f/R); linear: standardised f/R
+loss: {kind: mse, w_force: 1.0, w_alpha: 1.0, huber_beta: 1.0}
+augment: {hflip: true}    # left-right mirror of the crop with alpha -> -alpha
+
+pretrained: true          # ImageNet ResNet18
+hidden: 256
+dropout: 0.2
+input_size: 224           # ResNet input size
+batch_size: 64
+
+phases:
+  - {name: warmup,   train_backbone: false, lr: 1.0e-3, epochs: 10, patience: 4, min_delta: 1.0e-4}
+  - {name: finetune, train_backbone: true, lr: 1.0e-4, weight_decay: 1.0e-4, schedule: plateau, factor: 0.5,
+     sched_patience: 4, min_lr: 1.0e-6, epochs: 150, patience: 12, min_rel_delta: 0.005}

@@ -1,0 +1,68 @@
+"""
+Smoke test: random balanced force sets -> rendered and camera-processed disks -> CRISPeD guess -> fit.
+
+    python tests/test_smoke.py [--weights-dir weights] [--n 32]
+
+Without weights only the forward model, the camera model, the crops and the fit (started from the true forces
+perturbed by 20%) are tested. With the released weights the guess of each network is checked on disks of its own
+condition. Runs in about a minute on a CPU.
+"""
+import argparse
+import os
+import sys
+
+import numpy as np
+import torch
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'crisped'))
+from forcesets import sample_force_sets
+from generate import CFG, camera
+from infer import guess, load_model, refine
+from render import HALO_AMP, render_batch
+
+
+def disks(n, cond, rng):
+    """n disks with 3 contacts: true f, alpha, phi [n, 3] and camera frames (uint8, px_train)."""
+    s = dict(CFG['sampler'])
+    s['a_max'], s['gap_min'] = np.radians(s.pop('a_max_deg')), np.radians(s.pop('gap_min_deg'))
+    f, phi, alpha = sample_force_sets(3, n, rng, R=CFG['R_ref'], fsigma=CFG['fsigma'], **s)
+    ss = CFG['supersample']
+    hi = render_batch(f, alpha, phi, CFG['R_ref'], CFG['px_train'] * ss, CFG['fsigma'], halo=HALO_AMP[cond],
+                      power=CFG['halo_power'], device='cpu')
+    img = torch.nn.functional.avg_pool2d(hi[:, None], ss)[:, 0].numpy()
+    cam = dict(blur=1.0, gain=0.8, offset=0.025, noise=0.01)
+    frames = [camera(im, dict(cam, noise_seed=int(rng.integers(2**31)))) for im in img]
+    return f, alpha, phi, frames, cam
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--weights-dir', default=os.path.join(os.path.dirname(__file__), '..', 'weights'))
+    ap.add_argument('--n', type=int, default=32)
+    a = ap.parse_args()
+    rng = np.random.default_rng(1)
+    ok = True
+    for cond in ('clean', 'halo'):
+        f, alpha, phi, frames, cam = disks(a.n, cond, rng)
+        start = f * rng.uniform(0.8, 1.2, f.shape)
+        ff, _ = refine(frames, list(phi), list(start), list(alpha), CFG['R_ref'], CFG['fsigma'], HALO_AMP[cond],
+                       cam['gain'], cam['offset'], 'tight')
+        e_fit = np.median(np.abs(np.stack(ff) / f - 1))
+        line = f'{cond}: fit from perturbed truth {100 * e_fit:.1f}%'
+        ok &= e_fit < 0.05
+        w = os.path.join(a.weights_dir, f'crisped_{cond}.pt')
+        if os.path.exists(w):
+            fg, ag = guess(load_model(w), frames, list(phi), CFG['R_ref'], CFG['fsigma'])
+            e_g = np.median(np.abs(np.stack(fg) / f - 1))
+            e_a = np.degrees(np.median(np.abs(np.stack(ag) - alpha)))
+            line += f', guess {100 * e_g:.1f}% / {e_a:.2f} deg'
+            ok &= e_g < 0.05
+        else:
+            line += ' (no weights, guess not tested)'
+        print(line, flush=True)
+    print('PASS' if ok else 'FAIL')
+    sys.exit(0 if ok else 1)
+
+
+if __name__ == '__main__':
+    main()

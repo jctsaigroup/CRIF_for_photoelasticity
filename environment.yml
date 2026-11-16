@@ -1,0 +1,14 @@
+name: crisped
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pytorch=2.*        # tested with 2.8 (CUDA 12.8); CPU-only builds work for inference and the smoke test
+  - torchvision
+  - numpy=2.0
+  - pandas=2.3
+  - pyarrow            # parquet tables of the dataset
+  - pyyaml
+  - opencv
