@@ -1,18 +1,16 @@
 """
-Per-disk contact-force fit, batched over disks, started from an initial guess (CRISPeD or any other).
+Minimal image fit of the contact forces of a disk, batched over disks, started from an initial guess (CRISPeD or any
+other), with the same forward model as the network (render.py). It refines and tests the guess; an existing fitting
+pipeline can be used instead, provided its forward model matches the network's training images.
 
 Per disk (independent; Adam's per-element updates make batching exact):
   synth  = render(|f|, alpha, phi)                      (float32)
-  loss   = mean_px (smooth3x3(synth) - target)^2
-         + w_torque * (sum_k sin(alpha_k) R |f_k|)^2                              (torque balance, 1e5)
-         + w_force * [(sum_k cos(alpha_k - phi_k + pi/2)|f_k|)^2 + (sum_k sin(...)|f_k|)^2]   (force balance, 1)
+  loss   = mean_px (smooth3x3(synth) - target)^2        (image term only; no force- or torque-balance penalty)
   Adam(lr) on (f, alpha); a disk stops when its loss improves by < tol for `patience` consecutive
   iterations, or at n_iter. Stopped disks are frozen (parameters restored after each step).
-Both the signed parameter f and |f| are returned. SETTINGS holds the loose and tight fits of the paper.
+Both the signed parameter f and |f| are returned. SETTINGS holds a loose and a tight stopping rule.
 The target is the disk frame on an absolute intensity scale (calibrated_target), not divided by its maximum.
 """
-import math
-
 import cv2
 import numpy as np
 import torch
@@ -21,7 +19,7 @@ import torch.nn.functional as F
 from render import render_batch
 
 FSIGMA = 225.0
-# fit settings of the paper: loose (stops early) and tight (run to convergence)
+# stopping rules: loose (stops early) and tight (run to convergence)
 SETTINGS = {'loose': dict(lr=4e-2, n_iter=1000, tol=1e-3, patience=10),
             'tight': dict(lr=4e-2, n_iter=2000, tol=1e-6, patience=100)}
 
@@ -58,13 +56,12 @@ def _smooth(x):
 
 
 def fit_batch(target, f0, a0, phi, rm, halo, lr=4e-2, n_iter=1000, tol=1e-3, patience=10,
-              power=6.0, device='cuda', fsigma=FSIGMA, w_torque=1e5, w_force=1.0, snapshots=None):
+              power=6.0, device='cuda', fsigma=FSIGMA, snapshots=None):
     """target [B, px, px]; f0, a0, phi [B, z] (same z within a batch).
     halo: residual-stress amplitude of the forward model (render.py), 0 for disks without residual stress.
-    w_torque, w_force: weights of the equilibrium penalties (0 switches a term off).
     snapshots: optional iteration counts k; the result then has 'snap' = {k: (f_abs, alpha)} after k Adam steps
     (k = 0 is the start; a disk that stopped early keeps its final values).
-    Returns dict of numpy arrays: f (signed), f_abs, alpha, loss, image_loss, n_iter."""
+    Returns dict of numpy arrays: f (signed), f_abs, alpha, loss (final image loss), n_iter."""
     T = torch.as_tensor(target, dtype=torch.float32, device=device)
     f = torch.tensor(np.asarray(f0), dtype=torch.float32, device=device, requires_grad=True)
     a = torch.tensor(np.asarray(a0), dtype=torch.float32, device=device, requires_grad=True)
@@ -76,7 +73,6 @@ def fit_batch(target, f0, a0, phi, rm, halo, lr=4e-2, n_iter=1000, tol=1e-3, pat
     counter = torch.zeros(B, dtype=torch.long, device=device)
     iters = torch.full((B,), n_iter, dtype=torch.long, device=device)
     last_loss = torch.zeros(B, device=device)
-    last_img = torch.zeros(B, device=device)
     snap_at, snap = set(snapshots or ()), {}
 
     def take(k):
@@ -88,14 +84,9 @@ def fit_batch(target, f0, a0, phi, rm, halo, lr=4e-2, n_iter=1000, tol=1e-3, pat
         opt.zero_grad(set_to_none=True)
         fa = f.abs()
         synth = render_batch(fa, a, ph, rm, px, fsigma, halo=halo, power=power, device=device, dtype=torch.float32)
-        img = ((_smooth(synth) - T) ** 2).mean((1, 2))
-        ang = a - ph + math.pi / 2
-        torque = w_torque * (torch.sin(a) * rm * fa).sum(1) ** 2
-        force = w_force * ((torch.cos(ang) * fa).sum(1) ** 2 + (torch.sin(ang) * fa).sum(1) ** 2)
-        loss = img + torque + force
+        loss = ((_smooth(synth) - T) ** 2).mean((1, 2))
         with torch.no_grad():
             last_loss = torch.where(active, loss.detach(), last_loss)
-            last_img = torch.where(active, img.detach(), last_img)
         (loss * active).sum().backward()
         f_keep, a_keep = f.detach().clone(), a.detach().clone()
         opt.step()
@@ -115,7 +106,7 @@ def fit_batch(target, f0, a0, phi, rm, halo, lr=4e-2, n_iter=1000, tol=1e-3, pat
     for k in snap_at - set(snap):     # every disk stopped before k: final values
         snap[k] = (f.detach().abs().cpu().numpy(), a.detach().cpu().numpy())
     out = dict(f=f.detach().cpu().numpy(), f_abs=f.detach().abs().cpu().numpy(), alpha=a.detach().cpu().numpy(),
-               loss=last_loss.cpu().numpy(), image_loss=last_img.cpu().numpy(), n_iter=iters.cpu().numpy())
+               loss=last_loss.cpu().numpy(), n_iter=iters.cpu().numpy())
     if snapshots:
         out['snap'] = snap
     return out

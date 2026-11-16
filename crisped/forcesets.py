@@ -15,7 +15,7 @@ Every contact is treated identically (no "last force closes the balance" step):
 Defaults: m in [0.02, 4] N, nc_max = 5, f_max = 6.4 N (~6 diametric-equivalent
 fringes, 4 f / (pi R fsigma) at R = 6 mm, fsigma = 225), mu = 1.
 Returned per contact: f = sqrt(n^2 + t^2), alpha = atan2(t, n), phi. Forces in N for a disk of
-radius R_REF; contact convention as contact_force_vectors (the same as the balance terms of fit.py).
+radius R_REF; contact convention as contact_force_vectors.
 """
 import math
 import numpy as np
@@ -25,7 +25,7 @@ from render import center_fringe_order
 
 def contact_force_vectors(f, phi, alpha):
     """Cartesian force on the disk: f cos(alpha) along the inward normal -(cos phi, sin phi),
-    f sin(alpha) along the tangent (-sin phi, cos phi). Same convention as the force-balance term of fit.py."""
+    f sin(alpha) along the tangent (-sin phi, cos phi)."""
     fx = -f * np.cos(alpha) * np.cos(phi) - f * np.sin(alpha) * np.sin(phi)
     fy = -f * np.cos(alpha) * np.sin(phi) + f * np.sin(alpha) * np.cos(phi)
     return fx, fy
