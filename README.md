@@ -1,4 +1,4 @@
-# CRIF
+# CRIF (Contact-Region Inference of Forces)
 
 CRIF is a convolutional network that predicts the contact forces on a photoelastic disk, one contact at a time, from
 a crop of the disk image around the contact. Its prediction can be used directly, for example for per-particle or
