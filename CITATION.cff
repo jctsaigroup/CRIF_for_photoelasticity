@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software or the trained networks, please cite it as below."
+type: software
+title: "CRIF (Contact-Region Inference of Forces): neural-network initial guesses for photoelastic force inversion"
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/jctsaigroup/CRIF_for_photoelasticity"
+authors:
+  - family-names: Lin
+    given-names: Jr-Jiun
+    orcid: "https://orcid.org/0009-0009-7922-6398"
+    affiliation: "Institute of Physics, Academia Sinica, Taipei, Taiwan"
+  - family-names: Tsai
+    given-names: Jih Chiang
+    orcid: "https://orcid.org/0000-0002-5738-5103"
+    affiliation: "Institute of Physics, Academia Sinica, Taipei, Taiwan"
+keywords:
+  - photoelasticity
+  - granular materials
+  - contact forces
+  - convolutional neural network
+  - force inversion
