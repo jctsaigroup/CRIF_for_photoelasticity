@@ -1,5 +1,5 @@
 """
-Train the contact-force regressor (CRISPeD) on the synthetic contact crops.
+Train the contact-force regressor (CRIF) on the synthetic contact crops.
 
     python train.py configs/clean.yaml [--run-id my_run] [--resume]
 

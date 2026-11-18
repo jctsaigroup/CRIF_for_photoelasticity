@@ -1,5 +1,5 @@
 """
-Batched photoelastic disk renderer: the forward model of CRISPeD.
+Batched photoelastic disk renderer: the forward model of CRIF.
 
 Superposed point-load (Flamant) stresses from each contact, plus an optional axisymmetric residual stress
     sigma_r = K (R^p - r^p),  sigma_theta = K (R^p - (p+1) r^p),  K = A fsigma / (2 p R^p),

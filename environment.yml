@@ -1,4 +1,4 @@
-name: crisped
+name: crif
 channels:
   - pytorch
   - nvidia

@@ -1,5 +1,5 @@
 """
-Smoke test: random balanced force sets -> rendered and camera-processed disks -> CRISPeD guess -> fit.
+Smoke test: random balanced force sets -> rendered and camera-processed disks -> CRIF guess -> fit.
 
     python tests/test_smoke.py [--weights-dir weights] [--n 32]
 
@@ -14,7 +14,7 @@ import sys
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'crisped'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'crif'))
 from forcesets import sample_force_sets
 from generate import CFG, camera
 from infer import guess, load_model, refine
@@ -50,7 +50,7 @@ def main():
         e_fit = np.median(np.abs(np.stack(ff) / f - 1))
         line = f'{cond}: fit from perturbed truth {100 * e_fit:.1f}%'
         ok &= e_fit < 0.05
-        w = os.path.join(a.weights_dir, f'crisped_{cond}.pt')
+        w = os.path.join(a.weights_dir, f'crif_{cond}.pt')
         if os.path.exists(w):
             fg, ag = guess(load_model(w), frames, list(phi), CFG['R_ref'], CFG['fsigma'])
             e_g = np.median(np.abs(np.stack(fg) / f - 1))

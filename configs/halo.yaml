@@ -1,4 +1,4 @@
-# halo-CRISPeD: disks with the swollen-rim residual stress (render.HALO_AMP). Recipe of the paper.
+# halo-CRIF: disks with the swollen-rim residual stress (render.HALO_AMP). Recipe of the paper.
 # dataset_root / runs_root default to paths.py
 train_sources: [halo/train]
 val_sources: [halo/val]

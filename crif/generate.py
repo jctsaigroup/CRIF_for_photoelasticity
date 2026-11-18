@@ -38,7 +38,7 @@ from paths import DATASET_ROOT
 from render import HALO_AMP, render_batch
 
 CFG = dict(
-    name='crisped_v1',
+    name='crif_v1',
     out_root=DATASET_ROOT,
     seed=20261021,          # the dataset of the paper
     z_values=[2, 3, 4, 5, 6],

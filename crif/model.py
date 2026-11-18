@@ -1,4 +1,4 @@
-"""CRISPeD network: ImageNet ResNet-18 with a small regression head; outputs (standardized log(f/R), alpha /
+"""CRIF network: ImageNet ResNet-18 with a small regression head; outputs (standardized log(f/R), alpha /
 alpha_scale) for one contact crop, decoded with the run's data.TargetTransform."""
 import torch.nn as nn
 from torchvision import models

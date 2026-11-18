@@ -1,7 +1,7 @@
 """
-CRISPeD on experimental disk images: initial guess of the contact forces, optionally refined by the fit.
+CRIF on experimental disk images: initial guess of the contact forces, optionally refined by the fit.
 
-    python infer.py --weights weights/crisped_halo.pt --image disk.png --phis 0.12 1.75 3.30 \
+    python infer.py --weights weights/crif_halo.pt --image disk.png --phis 0.12 1.75 3.30 \
                     --radius 0.0075 --fsigma 225 [--fit --gain 0.8 --offset 0.05]
 
 Inputs per disk:

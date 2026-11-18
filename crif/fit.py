@@ -1,5 +1,5 @@
 """
-Minimal image fit of the contact forces of a disk, batched over disks, started from an initial guess (CRISPeD or any
+Minimal image fit of the contact forces of a disk, batched over disks, started from an initial guess (CRIF or any
 other), with the same forward model as the network (render.py). It refines and tests the guess; an existing fitting
 pipeline can be used instead, provided its forward model matches the network's training images.
 

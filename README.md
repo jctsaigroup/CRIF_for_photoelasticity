@@ -1,6 +1,6 @@
-# CRISPeD
+# CRIF
 
-CRISPeD is a convolutional network that predicts the contact forces on a photoelastic disk, one contact at a time, from
+CRIF is a convolutional network that predicts the contact forces on a photoelastic disk, one contact at a time, from
 a crop of the disk image around the contact. Its prediction can be used directly, for example for per-particle or
 boundary forces, or as the initial guess of a photoelastic force fit: started from it, a fit reaches the accuracy of a
 fit started from the true forces, also for strongly loaded disks.
@@ -15,14 +15,14 @@ dataset generator, the training protocol, a minimal image fit and an inference s
 
 | file | purpose |
 |---|---|
-| `crisped/render.py` | forward model: stress field of a disk under point contact forces, optional residual stress, photoelastic intensity |
-| `crisped/forcesets.py` | random contact-force sets in force and torque balance |
-| `crisped/generate.py` | synthetic dataset: rendering, camera model (blur, gain, offset, noise), contact crops |
-| `crisped/data.py`, `model.py` | crop datasets and target transform; ResNet-18 regressor |
-| `crisped/train.py`, `evaluate.py` | two-phase training (head warm-up, then fine-tuning) and evaluation on held-out disks |
-| `crisped/fit.py` | minimal image fit started from a guess, with the same forward model as the network |
-| `crisped/infer.py` | guess (and optional fit) for experimental disk images |
-| `crisped/export_weights.py` | package a trained run into a weights file for `infer.py` |
+| `crif/render.py` | forward model: stress field of a disk under point contact forces, optional residual stress, photoelastic intensity |
+| `crif/forcesets.py` | random contact-force sets in force and torque balance |
+| `crif/generate.py` | synthetic dataset: rendering, camera model (blur, gain, offset, noise), contact crops |
+| `crif/data.py`, `model.py` | crop datasets and target transform; ResNet-18 regressor |
+| `crif/train.py`, `evaluate.py` | two-phase training (head warm-up, then fine-tuning) and evaluation on held-out disks |
+| `crif/fit.py` | minimal image fit started from a guess, with the same forward model as the network |
+| `crif/infer.py` | guess (and optional fit) for experimental disk images |
+| `crif/export_weights.py` | package a trained run into a weights file for `infer.py` |
 | `configs/clean.yaml`, `halo.yaml` | training recipes of the two released networks |
 | `tests/test_smoke.py` | quick end-to-end check |
 
@@ -30,7 +30,7 @@ dataset generator, the training protocol, a minimal image fit and an inference s
 
 ```
 conda env create -f environment.yml
-conda activate crisped
+conda activate crif
 ```
 
 ## Trained networks
@@ -39,8 +39,8 @@ Two trained networks are attached to the [release](../../releases):
 
 | file | trained on |
 |---|---|
-| `crisped_clean.pt` | disks without residual stress |
-| `crisped_halo.pt` | disks with a swollen rim (residual-stress amplitude `halo = +1`, see `render.py`) |
+| `crif_clean.pt` | disks without residual stress |
+| `crif_halo.pt` | disks with a swollen rim (residual-stress amplitude `halo = +1`, see `render.py`) |
 
 Both were trained on disks rendered at fsigma = 225 N/m with a 100 px diameter, forces up to about 6 N on a 6 mm
 radius disk, 2–6 contacts per disk and contact angles of attack up to ±40°. Put them in `weights/` and check the
@@ -55,7 +55,7 @@ Expected on synthetic disks: median force errors of the guess of about 1–1.5% 
 ## Use on experimental images
 
 ```
-python crisped/infer.py --weights weights/crisped_clean.pt --image disk.png \
+python crif/infer.py --weights weights/crif_clean.pt --image disk.png \
                         --phis 0.12 1.75 3.30 --radius 0.0075 --fsigma 225
 ```
 
@@ -84,14 +84,14 @@ as long as its forward model matches the network's training images; balance cons
 ## Train your own network
 
 ```
-python crisped/generate.py                    # about 18,000 disks per condition, a few hours on a GPU
-python crisped/train.py configs/clean.yaml    # or configs/halo.yaml; about 10 h on a consumer GPU
-python crisped/evaluate.py runs/<run>
-python crisped/export_weights.py runs/<run> weights/my_net.pt --cond clean
+python crif/generate.py                    # about 18,000 disks per condition, a few hours on a GPU
+python crif/train.py configs/clean.yaml    # or configs/halo.yaml; about 10 h on a consumer GPU
+python crif/evaluate.py runs/<run>
+python crif/export_weights.py runs/<run> weights/my_net.pt --cond clean
 ```
 
-The dataset and the runs go to `data/` and `runs/` next to the repository; set `CRISPED_DATASET` and `CRISPED_RUNS`
-to put them elsewhere. `python crisped/generate.py <folder> 200` builds a small dataset for a quick test.
+The dataset and the runs go to `data/` and `runs/` next to the repository; set `CRIF_DATASET` and `CRIF_RUNS`
+to put them elsewhere. `python crif/generate.py <folder> 200` builds a small dataset for a quick test.
 
 To adapt the network:
 - **material and size**: forces are learned as f/R at fsigma = 225 N/m and rescaled at inference, so a different

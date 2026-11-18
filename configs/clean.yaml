@@ -1,4 +1,4 @@
-# CRISPeD: disks without residual stress. Recipe of the paper.
+# CRIF: disks without residual stress. Recipe of the paper.
 # dataset_root / runs_root default to paths.py
 train_sources: [clean/train]
 val_sources: [clean/val]
