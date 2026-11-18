@@ -7,13 +7,13 @@ Build the synthetic contact-force dataset.
 Layout under the output folder:
   config.json                       all parameters + code git hash
   forcesets.parquet                 one row per contact of each unique force set (split assigned here)
-  disks.parquet                     one row per rendered disk: set_id, rotation, split, camera-augmentation params
+  disks.parquet                     one row per rendered disk: set_id, rotation, split, image-modification params
   contacts.parquet                  one row per contact crop: labels f [N], f_over_R [N/m], alpha, phi, R
   renders/{cond}_{split}.npy        raw float16 renders [n_disks, PX, PX] in disk_id order (no augmentation)
   crops/{cond}/{split}/{contact_id:07d}.png
   crops/{cond}/test_px{N}/...       held-out test sets re-rendered at other disk resolutions
 cond in {clean, halo}: without residual stress and with the swollen rim (render.HALO_AMP). The same disk (forces,
-rotation, camera params, noise seed) is rendered in both.
+rotation, modification params, noise seed) is rendered in both.
 
 Splits are assigned per force set before rotation, so rotations and contacts of one set never cross splits.
 Crop preprocessing (contact_crops), the same for training and for experimental images: uint8 disk frame ->
@@ -54,12 +54,12 @@ CFG = dict(
     px_train=100,           # disk diameter in px for train/val/test; experimental disks are resized to it
     px_test_extra=[64, 80, 128, 160],
     crop_frac=0.46,         # crop side / disk diameter
-    # camera model, sampled per disk, applied before the crop preprocessing
-    cam_blur_sigma=[0.5, 1.5],   # px
-    cam_gain=[0.6, 1.0],
-    cam_offset=[0.0, 0.05],
-    cam_noise_sigma=[0.005, 0.03],
-    supersample=4,          # render at px*ss, area-average down: camera pixels integrate unresolved fringes
+    # image modifications (blur, gain, offset, noise), sampled per disk, applied before the crop preprocessing
+    mod_blur_sigma=[0.5, 1.5],   # px
+    mod_gain=[0.6, 1.0],
+    mod_offset=[0.0, 0.05],
+    mod_noise_sigma=[0.005, 0.03],
+    supersample=4,          # render at px*ss, area-average down: pixels integrate unresolved fringes
     render_batch=32,
 )
 
@@ -105,10 +105,10 @@ def build_tables(rng_seq):
                 set_rows.append((set_id, z, split_of[i], k, f[i, k], phi[i, k], alpha[i, k]))
             for r in range(CFG['rotations_per_set']):
                 rot = rng.uniform(0, 2 * np.pi)
-                cam = dict(blur=rng.uniform(*CFG['cam_blur_sigma']), gain=rng.uniform(*CFG['cam_gain']),
-                           offset=rng.uniform(*CFG['cam_offset']), noise=rng.uniform(*CFG['cam_noise_sigma']),
-                           noise_seed=int(rng.integers(2**31)))
-                disk_rows.append(dict(disk_id=disk_id, set_id=set_id, z=z, split=split_of[i], rot=rot, **cam))
+                mods = dict(blur=rng.uniform(*CFG['mod_blur_sigma']), gain=rng.uniform(*CFG['mod_gain']),
+                            offset=rng.uniform(*CFG['mod_offset']), noise=rng.uniform(*CFG['mod_noise_sigma']),
+                            noise_seed=int(rng.integers(2**31)))
+                disk_rows.append(dict(disk_id=disk_id, set_id=set_id, z=z, split=split_of[i], rot=rot, **mods))
                 for k in range(z):
                     contact_rows.append((contact_id, disk_id, set_id, z, split_of[i], k, f[i, k],
                                          f[i, k] / CFG['R_ref'], alpha[i, k], (phi[i, k] + rot) % (2 * np.pi)))
@@ -123,8 +123,8 @@ def build_tables(rng_seq):
     return forcesets, disks, contacts
 
 
-def camera(img, d, px_scale=1.0):
-    """Camera model on a float render in [0,1] -> uint8 frame (inside-disk offset, gain, blur, noise)."""
+def apply_modifications(img, d, px_scale=1.0):
+    """Image modifications on a float render in [0,1] -> uint8 frame (inside-disk offset, gain, blur, noise)."""
     yy, xx = np.mgrid[:img.shape[0], :img.shape[1]]
     c = (img.shape[0] - 1) / 2
     disk = np.hypot(yy - c, xx - c) <= img.shape[0] / 2
@@ -179,7 +179,7 @@ def write_crops(d, renders, contacts, out_dir, px):
     px_scale = px / CFG['px_train']
     for i, row in enumerate(d.itertuples()):
         cs = by_disk.get_group(row.disk_id)
-        frame = camera(renders[i].astype(np.float32), row._asdict(), px_scale)
+        frame = apply_modifications(renders[i].astype(np.float32), row._asdict(), px_scale)
         for cid, crop in zip(cs.contact_id, contact_crops(frame, cs.phi.to_numpy())):
             cv2.imwrite(os.path.join(out_dir, f'{cid:07d}.png'), crop)
 
@@ -210,16 +210,19 @@ def main():
 
 
 def render_cond(root, cond, device):
-    """Render one image condition into the existing dataset at root (same disks, camera params and noise seeds)."""
+    """Render one image condition into the existing dataset at root (same disks, modification params and noise seeds)."""
     disks = pd.read_parquet(os.path.join(root, 'disks.parquet'))
     contacts = pd.read_parquet(os.path.join(root, 'contacts.parquet'))
     for split in ('train', 'val', 'test'):
+        if not (disks.split == split).any():      # tiny dry-run datasets can leave a split empty
+            print(f'{cond}/{split}: no disks, skipped', flush=True)
+            continue
         t = time.time()
         d, r = render_split(contacts, disks, split, cond, CFG['px_train'], device)
         np.save(os.path.join(root, 'renders', f'{cond}_{split}.npy'), r)
         write_crops(d, r, contacts, os.path.join(root, 'crops', cond, split), CFG['px_train'])
         print(f'{cond}/{split}: {len(d)} disks in {time.time() - t:.0f}s', flush=True)
-    for px in CFG['px_test_extra']:
+    for px in CFG['px_test_extra'] if (disks.split == 'test').any() else []:
         d, r = render_split(contacts, disks, 'test', cond, px, device)
         write_crops(d, r, contacts, os.path.join(root, 'crops', cond, f'test_px{px}'), px)
         print(f'{cond}/test_px{px} done', flush=True)

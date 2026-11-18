@@ -85,7 +85,7 @@ to put them elsewhere. `python crif/generate.py <folder> 200` builds a small dat
 To adapt the network:
 - **material and size**: forces are learned as f/R at fsigma = 225 N/m and rescaled at inference, so a different
   fsigma or radius needs no retraining as long as the fringe orders stay within the training range;
-- **force range, contact numbers, camera**: change the sampler and camera settings in `generate.CFG`;
+- **force range, contact numbers, image modifications**: change the sampler and modification settings in `generate.CFG`;
 - **stress model**: change `render.py` (for example add a residual-stress amplitude to `HALO_AMP`), regenerate and
   retrain. Training sets of order 10⁴–10⁵ contacts gave errors near 1%.
 
