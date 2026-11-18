@@ -71,15 +71,6 @@ python crif/infer.py --weights weights/crif_clean.pt --image disk.png \
 
 For many disks, use `infer.guess` and `infer.refine` from Python; both take lists of frames and contact angles.
 
-Choose the network whose training images match your disks. A network applied to disks with a different stress
-model (for example the clean network on disks with residual stress) gives poor guesses for weakly loaded contacts.
-
-## About the fit
-
-`fit.py` fits only the image: the loss is the mean squared difference between the measured disk and the rendered
-one, with no force- or torque-balance penalty. It is meant to refine and test the guess with a forward model that is
-consistent with the network. The guesses can equally be passed to an existing fitting pipeline (for example PeGS),
-as long as its forward model matches the network's training images; balance constraints can be added there.
 
 ## Train your own network
 
