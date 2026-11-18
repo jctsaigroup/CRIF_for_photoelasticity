@@ -5,9 +5,7 @@ a crop of the disk image around the contact. Its prediction can be used directly
 boundary forces, or as the initial guess of a photoelastic force fit: started from it, a fit reaches the accuracy of a
 fit started from the true forces, also for strongly loaded disks.
 
-The network is trained only on synthetic images rendered with a forward model. To use it for a different material,
-particle size or stress model, render a new training set with your forward model and retrain with the same recipe.
-
+The network is trained only on synthetic images rendered with a forward model. 
 This repository offers the trained networks and everything needed to train your own: the forward model, the synthetic
 dataset generator, the training protocol, a minimal image fit and an inference script.
 
@@ -16,11 +14,11 @@ dataset generator, the training protocol, a minimal image fit and an inference s
 | file | purpose |
 |---|---|
 | `crif/render.py` | forward model: stress field of a disk under point contact forces, optional residual stress, photoelastic intensity |
-| `crif/forcesets.py` | random contact-force sets in force and torque balance |
-| `crif/generate.py` | synthetic dataset: rendering, camera model (blur, gain, offset, noise), contact crops |
+| `crif/forcesets.py` | generate random contact-force sets in force and torque balance |
+| `crif/generate.py` | generate synthetic dataset: rendering, modifications (blur, gain, offset, noise), contact crops |
 | `crif/data.py`, `model.py` | crop datasets and target transform; ResNet-18 regressor |
 | `crif/train.py`, `evaluate.py` | two-phase training (head warm-up, then fine-tuning) and evaluation on held-out disks |
-| `crif/fit.py` | minimal image fit started from a guess, with the same forward model as the network |
+| `crif/fit.py` | minimal image fit started from a guess|
 | `crif/infer.py` | guess (and optional fit) for experimental disk images |
 | `crif/export_weights.py` | package a trained run into a weights file for `infer.py` |
 | `configs/clean.yaml`, `halo.yaml` | training recipes of the two released networks |
