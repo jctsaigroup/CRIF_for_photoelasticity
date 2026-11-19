@@ -33,7 +33,7 @@ conda activate crif
 
 ## Trained networks
 
-Two trained networks are attached to the [release](https://github.com/jctsaigroup/CRIF_for_photoelasticity/releases):
+The two trained networks are included in `weights/` (also attached to the [releases](https://github.com/jctsaigroup/CRIF_for_photoelasticity/releases)):
 
 | file | trained on |
 |---|---|
@@ -41,8 +41,7 @@ Two trained networks are attached to the [release](https://github.com/jctsaigrou
 | `crif_halo.pt` | disks with a swollen rim (residual-stress amplitude `halo = +1`, see `render.py`) |
 
 Both were trained on disks rendered at fsigma = 225 N/m with a 100 px diameter, forces up to about 6 N on a 6 mm
-radius disk, 2–6 contacts per disk and force angles (tangential vs. normal) within ±45°. Put them in `weights/` and check the
-installation:
+radius disk, 2–6 contacts per disk and force angles (tangential vs. normal) within ±45°. Check the installation:
 
 ```
 python tests/test_smoke.py
