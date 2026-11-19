@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software or the trained networks, please cite it as below."
 type: software
 title: "CRIF (Contact-Region Inference of Forces): neural-network initial guesses for photoelastic force inversion"
-version: 1.0.0
+version: 1.0.1
 license: MIT
 repository-code: "https://github.com/jctsaigroup/CRIF_for_photoelasticity"
 authors:
