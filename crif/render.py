@@ -17,7 +17,7 @@ HALO_AMP = {'clean': 0.0, 'halo': 1.0}
 
 
 def disk_grid(px, rm, device, dtype=torch.float64):
-    """Pixel-centre coordinates on a px x px grid spanning [-rm, rm], 'ij' indexing."""
+    """Pixel-center coordinates on a px x px grid spanning [-rm, rm], 'ij' indexing."""
     x = torch.linspace(-rm, rm, px, device=device, dtype=dtype)
     xxi, xxj = torch.meshgrid(x, x, indexing='ij')
     inside = xxi**2 + xxj**2 <= rm**2
@@ -25,7 +25,7 @@ def disk_grid(px, rm, device, dtype=torch.float64):
 
 
 def center_fringe_order(f, alpha, beta, rm, fsigma, device='cpu'):
-    """Contact-induced fringe order dsigma/fsigma at the disk centre (no halo), shape [B]."""
+    """Contact-induced fringe order dsigma/fsigma at the disk center (no halo), shape [B]."""
     f = torch.as_tensor(f, dtype=torch.float64, device=device)
     alpha = torch.as_tensor(alpha, dtype=torch.float64, device=device)
     beta = torch.as_tensor(beta, dtype=torch.float64, device=device)

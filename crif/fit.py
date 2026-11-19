@@ -25,7 +25,7 @@ SETTINGS = {'loose': dict(lr=4e-2, n_iter=1000, tol=1e-3, patience=10),
 
 
 def calibrated_target(frame_u8, gain, offset):
-    """Fit target on the absolute intensity scale: blur 3x3 sigma 1, grey level / 255, remove one gain and offset
+    """Fit target on the absolute intensity scale: blur 3x3 sigma 1, gray level / 255, remove one gain and offset
     calibrated for the whole experiment, mask. A faint disk stays faint: dividing each frame by its maximum would
     scale it up to full brightness and make the fit overestimate weak forces."""
     px = frame_u8.shape[0]
@@ -37,7 +37,7 @@ def calibrated_target(frame_u8, gain, offset):
 
 def intensity_levels(frames_u8):
     """Gain and offset of a set of disk frames from their own black and white levels, no forces needed: per frame the
-    0.5 and 99.5 percentiles of the blurred grey levels inside r < 0.93 R (the edge band is excluded); offset = 5th
+    0.5 and 99.5 percentiles of the blurred gray levels inside r < 0.93 R (the edge band is excluded); offset = 5th
     percentile of the lows, gain = 95th percentile of the highs minus the offset. A least-squares fit of the frames on
     a model image is not used: any misalignment of the fringes dilutes its slope (gain too low, offset too high)."""
     px = frames_u8[0].shape[0]

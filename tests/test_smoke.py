@@ -1,11 +1,11 @@
 """
 Smoke test: random balanced force sets -> rendered and modified disks -> CRIF guess -> fit.
 
-    python tests/test_smoke.py [--weights-dir weights] [--n 32]
+    python tests/test_smoke.py [--weights-dir weights] [--n 8]
 
 Without weights only the forward model, the image modifications, the crops and the fit (started from the true forces
 perturbed by 20%) are tested. With the released weights the guess of each network is checked on disks of its own
-condition. Runs in about a minute on a CPU.
+condition. Runs in a few minutes on a CPU with the default 8 disks per condition.
 """
 import argparse
 import os
@@ -38,7 +38,7 @@ def disks(n, cond, rng):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--weights-dir', default=os.path.join(os.path.dirname(__file__), '..', 'weights'))
-    ap.add_argument('--n', type=int, default=32)
+    ap.add_argument('--n', type=int, default=8, help='disks per condition')
     a = ap.parse_args()
     rng = np.random.default_rng(1)
     ok = True

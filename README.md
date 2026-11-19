@@ -33,7 +33,7 @@ conda activate crif
 
 ## Trained networks
 
-Two trained networks are attached to the [release](../../releases):
+Two trained networks are attached to the [release](https://github.com/jctsaigroup/CRIF_for_photoelasticity/releases):
 
 | file | trained on |
 |---|---|
@@ -41,14 +41,15 @@ Two trained networks are attached to the [release](../../releases):
 | `crif_halo.pt` | disks with a swollen rim (residual-stress amplitude `halo = +1`, see `render.py`) |
 
 Both were trained on disks rendered at fsigma = 225 N/m with a 100 px diameter, forces up to about 6 N on a 6 mm
-radius disk, 2–6 contacts per disk and contact angles of attack up to ±40°. Put them in `weights/` and check the
+radius disk, 2–6 contacts per disk and force angles (tangential vs. normal) within ±45°. Put them in `weights/` and check the
 installation:
 
 ```
 python tests/test_smoke.py
 ```
 
-Expected on synthetic disks: median force errors of the guess of about 1–1.5% and angle errors below 1°.
+It takes a few minutes on a CPU. Expected on its synthetic disks: median force errors of the guess of about 1% and
+angle errors below 1°.
 
 ## Use on experimental images
 
@@ -73,7 +74,7 @@ For many disks, use `infer.guess` and `infer.refine` from Python; both take list
 ## Train your own network
 
 ```
-python crif/generate.py                    # about 18,000 disks per condition, a few hours on a GPU
+python crif/generate.py                    # 30,000 disks (120,000 contacts) per condition, a few hours on a GPU
 python crif/train.py configs/clean.yaml    # or configs/halo.yaml; about 10 h on a consumer GPU
 python crif/evaluate.py runs/<run>
 python crif/export_weights.py runs/<run> weights/my_net.pt --cond clean

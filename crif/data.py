@@ -3,7 +3,7 @@ In-memory contact-crop datasets.
 
 Crops are small (46x46 px at the 100 px training resolution), so a split is loaded once into a
 uint8 array and cached as .npy next to the dataset; resizing to the network input and ImageNet
-normalisation happen on the GPU (to_network_input), keeping the CPU free.
+normalization happen on the GPU (to_network_input), keeping the CPU free.
 
 Sources are named "<cond>/<split>", e.g. "halo/train", "clean/test_px80".
 """
@@ -48,7 +48,7 @@ def load_source(root, source, contacts=None):
 
 
 class TargetTransform:
-    """Network targets: y0 = standardised log(f/R) (or f/R if force_target='linear'), y1 = alpha / alpha_scale.
+    """Network targets: y0 = standardized log(f/R) (or f/R if force_target='linear'), y1 = alpha / alpha_scale.
     Statistics are fitted on the training labels and stored with the run."""
 
     def __init__(self, force_target='log', mean=None, std=None, alpha_scale=np.pi / 4):
@@ -98,7 +98,7 @@ class CropTensorDataset(torch.utils.data.Dataset):
 
 
 def to_network_input(batch_u8, size=224, hflip_mask=None):
-    """uint8 [B, h, w] on device -> normalised float [B, 3, size, size].
+    """uint8 [B, h, w] on device -> normalized float [B, 3, size, size].
     Equivalent to torchvision Resize -> Grayscale(3) -> ToTensor -> Normalize(ImageNet).
     hflip_mask [B] bool mirrors crops left-right (the caller must negate alpha for those rows)."""
     x = batch_u8.float().div_(255.0).unsqueeze(1)

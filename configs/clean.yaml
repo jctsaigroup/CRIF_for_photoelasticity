@@ -6,7 +6,7 @@ R_ref: 0.006              # m; f = R_ref * f_over_R for the synthetic disks
 seed: 0
 max_items: null           # subsample train (val gets max_items/4) for quick runs
 
-force_target: log         # log: standardised log(f/R); linear: standardised f/R
+force_target: log         # log: standardized log(f/R); linear: standardized f/R
 loss: {kind: mse, w_force: 1.0, w_alpha: 1.0, huber_beta: 1.0}
 augment: {hflip: true}    # left-right mirror of the crop with alpha -> -alpha
 

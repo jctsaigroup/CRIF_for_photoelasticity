@@ -1,7 +1,7 @@
 """
 Build the synthetic contact-force dataset.
 
-    python generate.py                       full dataset at paths.DATASET_ROOT (about 18,000 disks x 2 conditions)
+    python generate.py                       full dataset at paths.DATASET_ROOT (30,000 disks, 120,000 contacts, x 2 conditions)
     python generate.py <out_root> <n>        small dataset with n force sets per contact number, for a quick test
 
 Layout under the output folder:
@@ -17,7 +17,7 @@ rotation, modification params, noise seed) is rendered in both.
 
 Splits are assigned per force set before rotation, so rotations and contacts of one set never cross splits.
 Crop preprocessing (contact_crops), the same for training and for experimental images: uint8 disk frame ->
-3x3 Gaussian (sigma 1) -> divide by max -> circular mask -> rotate contact to top -> top-centre square.
+3x3 Gaussian (sigma 1) -> divide by max -> circular mask -> rotate contact to top -> top-center square.
 """
 import json
 import os
@@ -136,7 +136,7 @@ def apply_modifications(img, d, px_scale=1.0):
 
 def contact_crops(frame_u8, phis):
     """Network inputs of one disk: frame_u8 [px, px] (disk filling the frame, px = px_train), phis contact angles
-    (rad, atan2(row - cy, col - cx)) -> list of uint8 crops with the contact at the top centre."""
+    (rad, atan2(row - cy, col - cx)) -> list of uint8 crops with the contact at the top center."""
     px = frame_u8.shape[0]
     blurred = cv2.GaussianBlur(frame_u8, (3, 3), 1).astype(np.float32)
     m = blurred.max()

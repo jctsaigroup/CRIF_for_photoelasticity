@@ -2,8 +2,8 @@
 Force-set sampler: z contact forces on one disk, in exact force and torque balance.
 
 Every contact is treated identically (no "last force closes the balance" step):
-  1. contact angles phi_k: uniform on the circle conditioned on every neighbouring gap >= gap_min
-     (default 53 deg = 2 asin(r_small / (r_small + R_large)) for the 6.0 / 7.46 mm bidisperse disks),
+  1. contact angles phi_k: uniform on the circle conditioned on every neighboring gap >= gap_min
+     (default 53 deg = 2 asin(R / (R + R_n)), the closest spacing of two neighbors of radius R_n = 1.24 R),
      sampled exactly via Dirichlet gaps
   2. disk force scale m: log-uniform on [m_lo, m_hi]                     (flat prior in log force)
   3. normal forces   n_k = m * LogNormal(0, sigma_n)
@@ -11,7 +11,7 @@ Every contact is treated identically (no "last force closes the balance" step):
   4. balance: for fixed phi, sum F = 0 and sum torque = 0 are 3 linear constraints on (n, t);
      (n, t) is replaced by its minimum-norm projection onto that null space
   5. rejected unless every n_k > n_min_frac * m, |t_k| <= mu * n_k, every f_k <= f_max and the
-     contact-induced fringe order at the disk centre is <= nc_max
+     contact-induced fringe order at the disk center is <= nc_max
 Defaults: m in [0.02, 4] N, nc_max = 5, f_max = 6.4 N (~6 diametric-equivalent
 fringes, 4 f / (pi R fsigma) at R = 6 mm, fsigma = 225), mu = 1.
 Returned per contact: f = sqrt(n^2 + t^2), alpha = atan2(t, n), phi. Forces in N for a disk of
