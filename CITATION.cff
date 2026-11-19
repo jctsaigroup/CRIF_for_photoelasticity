@@ -4,6 +4,7 @@ type: software
 title: "CRIF (Contact-Region Inference of Forces): neural-network initial guesses for photoelastic force inversion"
 version: 1.0.1
 license: MIT
+doi: 10.5281/zenodo.24358379
 repository-code: "https://github.com/jctsaigroup/CRIF_for_photoelasticity"
 authors:
   - family-names: Lin

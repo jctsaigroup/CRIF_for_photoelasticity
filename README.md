@@ -1,5 +1,7 @@
 # CRIF (Contact-Region Inference of Forces)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24358379.svg)](https://doi.org/10.5281/zenodo.24358379)
+
 CRIF is a convolutional network that predicts the contact forces on a photoelastic disk, one contact at a time, from
 a crop of the disk image around the contact. Its prediction can be used directly, for example for per-particle or
 boundary forces, or as the initial guess of a photoelastic force fit: started from it, a fit reaches the accuracy of a
@@ -88,6 +90,11 @@ To adapt the network:
 - **force range, contact numbers, image modifications**: change the sampler and modification settings in `generate.CFG`;
 - **stress model**: change `render.py` (for example add a residual-stress amplitude to `HALO_AMP`), regenerate and
   retrain. Training sets of order 10⁴–10⁵ contacts gave errors near 1%.
+
+## Citation
+
+If you use CRIF or the trained networks, please cite the software archive, [doi:10.5281/zenodo.24358379](https://doi.org/10.5281/zenodo.24358379)
+(this DOI always resolves to the latest version; GitHub's "Cite this repository" button gives the full reference).
 
 ## License
 
