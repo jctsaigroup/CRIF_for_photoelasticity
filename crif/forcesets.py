@@ -3,7 +3,7 @@ Force-set sampler: z contact forces on one disk, in exact force and torque balan
 
 Every contact is treated identically (no "last force closes the balance" step):
   1. contact angles phi_k: uniform on the circle conditioned on every neighboring gap >= gap_min
-     (default 53 deg = 2 asin(R / (R + R_n)), the closest spacing of two neighbors of radius R_n = 1.24 R),
+     (default 53 deg = 2 asin(R / (R + R_n)), the closest spacing of two neighbors of radius R_n ~ 1.25 R),
      sampled exactly via Dirichlet gaps
   2. disk force scale m: log-uniform on [m_lo, m_hi]                     (flat prior in log force)
   3. normal forces   n_k = m * LogNormal(0, sigma_n)
